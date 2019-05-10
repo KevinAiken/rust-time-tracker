@@ -34,7 +34,10 @@ fn main() -> Result<()> {
         NO_PARAMS,
     )?;
 
-
+    conn.execute(
+        "INSERT INTO timesheet (activity, entryTime, inputType) VALUES (?1, ?2, ?3)",
+        &[&entry.activity, &entry.entry_time, &entry.input_type],
+    )?;
 
     Ok(())
 }
