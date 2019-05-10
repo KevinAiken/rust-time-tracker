@@ -1,0 +1,9 @@
+[package]
+name = "rust-time-tracker"
+version = "0.1.0"
+authors = ["Kevin Aiken <Aiken.Kevin.M@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+rusqlite = "0.18.0"
+chrono = "0.4.6"
