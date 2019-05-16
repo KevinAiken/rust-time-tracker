@@ -1,52 +1,28 @@
 extern crate rusqlite;
 extern crate chrono;
 
-use chrono::prelude::*;
+use rust_time_tracker::TimesheetEntry;
 
-use rusqlite::{Connection, Result};
-use rusqlite::NO_PARAMS;
+use std::{env, process};
+use std::error::Error;
 
-use std::collections::HashMap;
-use std::env;
-
-#[derive(Debug)]
-struct TimesheetEntry {
-    activity: String,
-    entry_time: String,
-    input_type: String,
-}
-
-fn main() -> Result<()> {
+fn main(){
     let args: Vec<String> = env::args().collect();
 
-    let entry = parse_entry(&args);
+    let entry = TimesheetEntry::new(&args).unwrap_or_else(|err| {
+        println!("Problem parsing arguments: {}", err);
+        process::exit(1);
+    });
 
     println!("Adding entry to {} tracking for {} at {}", entry.input_type, entry.activity, entry.entry_time);
 
-    let conn = Connection::open("rust-time-tracker.db")?;
+    if let Err(e) = rust_time_tracker::run(entry) {
+        println!("Application error: {}", e);
 
-    conn.execute(
-        "create table if not exists timesheet (\
-            activity text,\
-            entryTime text primary key,\
-            inputType text\
-            )",
-        NO_PARAMS,
-    )?;
+        process::exit(1);
+    }
 
-    conn.execute(
-        "INSERT INTO timesheet (activity, entryTime, inputType) VALUES (?1, ?2, ?3)",
-        &[&entry.activity, &entry.entry_time, &entry.input_type],
-    )?;
 
-    Ok(())
 }
 
-fn parse_entry(args: &[String]) -> TimesheetEntry {
-    let activity = args[2].clone();
-    let input_type = args[1].clone();
-    let entry_time: DateTime<Utc> = Utc::now();
-    let entry_time = entry_time.to_string();
 
-    TimesheetEntry { activity, entry_time, input_type }
-}
